@@ -1,27 +1,27 @@
 from flask import Flask, render_template, request, redirect
-import sqlite3
 
 app = Flask(__name__)
 
-def init_db():
-    conn = sqlite3.connect('users.db')
-    conn.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)')
-    conn.close()
+@app.route("/", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        if username == "admin" and password == "admin":
+            return redirect("/order")
+        else:
+            return "Invalid credentials"
+    return render_template("login.html")
 
-@app.route('/')
-def home():
-    return render_template('login.html')
+@app.route("/order", methods=["GET", "POST"])
+def order():
+    if request.method == "POST":
+        shirt = request.form["shirt"]
+        quantity = request.form["quantity"]
+        name = request.form["name"]
+        address = request.form["address"]
+        return render_template("success.html", shirt=shirt, quantity=quantity, name=name)
+    return render_template("order.html")
 
-@app.route('/register', methods=['POST'])
-def register():
-    username = request.form['username']
-    password = request.form['password']
-    conn = sqlite3.connect('users.db')
-    conn.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-    conn.commit()
-    conn.close()
-    return redirect('/')
-
-if __name__ == '__main__':
-    init_db()
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
